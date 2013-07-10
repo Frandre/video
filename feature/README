@@ -1,0 +1,9 @@
+This folder contains .m files:
+
+computeflow.m computes the optical flow information from consecutive images
+
+converttree2structure.m is applied to chage the tree structure to ordinary structures to spped up 
+
+getimagecolor.m gets the mean and variance inside superpixels in LAB color space
+
+superpixel.m generates superpixels
