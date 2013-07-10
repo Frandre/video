@@ -1,0 +1,9 @@
+finalunary.m computes the final unary term after jointly predict the geometric and semantic label
+
+geometricpotential.m projects the initial region-based geometric uanry potential to pixel-wise and then maps to the new superpixel we generate
+
+jointlabel.m train a multiclass logistic classifier for jointly inference
+
+trainTestSurfaceContestScript.m trains a classifier for geometric label
+
+
