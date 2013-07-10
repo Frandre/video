@@ -1,0 +1,9 @@
+This file contains file types such as .txt .m .mat.
+
+All files end up with .txt and .m are predifined to either show or create results.
+
+renameimages.m bulid a correspondence between the DATASET provided by LXXXX and my files. Mainly for gound truth and names.
+
+resizeimgs.m resizes the original 960*720 image to 320*240 image
+
+alltrainimage.m collects image and their ground truth for geometric training. (I use Hoeim's method to get the unary term)  
