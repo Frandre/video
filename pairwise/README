@@ -1,0 +1,10 @@
+All files are used to get pairwise or higher order term
+
+adjacenatbetweenframes.m generates temporal adjacent maps based on optical flow result
+
+findhigherorder.m  higherorder.m traintphigherorder.m 
+
+spatialsmooth.m
+
+tppairwise.m trainsppairwise.m traintppairwise.m geometricsmooth.m
+
