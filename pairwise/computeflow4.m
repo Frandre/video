@@ -1,9 +1,8 @@
-function adjacantbetweenframes(namecell)
+function computeflow4(namecell,iter)
+
 row=240;
 col=320;
-edges=-pi/2:pi/10:pi/2;
-% namecell=importdata('../data/framenames.txt');
-for iter=1:4:length(namecell)
+
     imname=[namecell{iter},'.png'];
     resultname=regexprep(imname, '.png', '_Flow.mat');
     load(['./videoset/newflow/',resultname]);
@@ -13,23 +12,6 @@ for iter=1:4:length(namecell)
     curry=round(prevy+(reshape(Flow(:,:,2),row*col,[]))');
     
     id=find(currx<=0|curry<=0|currx>row|curry>col);
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%     xid0=(currx<=0);
-%     yid0=(curry<=0);
-%     currx(xid)=1;
-%     curry(yid)=1;
-%     
-%     xidm=(currx>row);
-%     yidm=(curry>col);
-%     currx(xidm)=row;
-%     curry(yidm)=col;
-%     currx(id)=1;
-%     curry(id)=1;
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%     flowdist=reshape(Flow(:,:,2)./Flow(:,:,1),row*col,[]);
-%     flowdist(isnan(flowdist))=0;
-%     flowdist(isinf(flowdist))=1000;
-%     flowdist=atan(flowdist);
     curr=(curry-1)*row+currx;
     
     filename=regexprep(imname, '.png', '.segimage.mat');
@@ -45,17 +27,8 @@ for iter=1:4:length(namecell)
     for segiter=1:nseg
         %%%%%%%%%%%%%%%%%%%%%% Between Frames %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         selectid=setdiff(find(segimage==segiter),intersect(find(segimage==segiter),id));
-%         currregion=unique(segimage1(curr(selectid)));
         [selectregion(segiter) freq]=mode(single(segimage1(curr(selectid))));
-%         prevregion=ones(length(currregion),1)*segiter;
-        
-        currregion=unique(segimage1(segimage==segiter));
-%         if length(currregion)>4
-%             countnumber=histc(segimage1(curr(selectid)),currregion);
-%             [ordercount countnumber]=sort(countnumber,'descend');
-%             currregion=currregion(countnumber(1:4));
-%         end
-        
+        currregion=unique(segimage1(segimage==segiter));       
         if size(currregion,2)>size(currregion,1)
             currregion=currregion';
         end
@@ -77,17 +50,17 @@ for iter=1:4:length(namecell)
     findoutx=double([adjregion(:,1);adjregion(:,2)]);
     findouty=double([adjregion(:,2);adjregion(:,1)]);
     
-%      if iter~=1
+
         filename=[namecell{iter+1},'.flowdis.mat'];
         flown1=importdata(['./videoset/tem/',filename]);
         filename=[namecell{iter},'.flowdis.mat'];
-        load(['./videoset/tem/',filename]);              
+        load(['./videoset/tem/',filename]);
         
         valout=(flown(adjregion(:,2),:)-flown1(adjregion(:,1)-nseg,:))./flown(adjregion(:,2),:);
-        valout(isnan(valout))=0
-        valout(isinf(valout))=;
+        valout(isnan(valout))=0;
+        valout(isinf(valout))=max(abs(valout(~isinf(valout))));
         valout=sum((valout).^2,2);
-        meanval=1/(2*((sum(valout)/length(valout))));
+        meanval=1/(sum(valout)/length(valout));
         valout=exp(-meanval*valout);
     
         valout0=valout;%*para1+para2;
@@ -96,16 +69,7 @@ for iter=1:4:length(namecell)
         
          filename=[namecell{iter},'_TPadj.mat'];
          save(['./videoset/tem/',filename],'adjoutregion');
-%      end
-%     imsegs(iter).selectregion=selectregion;
-%     imsegs(iter).flown=flown;
-%     imsegs(iter).adjoutregion=adjoutregion;
-    adjregion=[];
-%     filename=regexprep(imname, '.png', '.next.mat');
-%     save(['./videoset/tem/',filename],'selectregion');
-%     filename=regexprep(imname,'.png', '.flowdis.mat');
-%     save(['./videoset/tem/',filename],'flown');
-    fprintf('Finish image %s temporal adjacent matrix finish...\n',imname);
-end
 
+    adjregion=[];
+    fprintf('Finish image %s temporal adjacent matrix finish...\n',imname);
 end

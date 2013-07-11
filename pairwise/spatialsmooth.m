@@ -54,7 +54,8 @@ biimage=zeros(240,320);
     findiny=adjin(:,1);
     findinx=adjin(:,2);
     result=sum((imagecolor(findinx,1:3)-imagecolor(findiny,1:3)).^2,2);
-    meanresult=1/(2*((sum(result)/length(result))));
+%     meanresult=1/(2*((sum(result)/length(result))));
+    meanresult=1/(sum(result)/length(result));
     valin=exp(-meanresult*result);
     
     valin0=valin;%*para1+para2;
@@ -62,7 +63,7 @@ biimage=zeros(240,320);
     adjinregion=sparse(double(findinx),double(findiny),valin0,double(nseg),double(nseg));
 %     adjinregion=adjinregion;
     fprintf('Finish image %s spatial adjacent matrix finish...\n',imname);
-    filename=regexprep(imname, '.png', '_SPadjn.mat');
+    filename=regexprep(imname, '.png', '_SPadj.mat');
 %     if sum(strcmp(imsegs.imname,cellname))||sum(strcmp(imsegs.imname,cellname1))
     save([outdir1,'/',filename],'adjinregion');
 %     end
