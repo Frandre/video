@@ -11,6 +11,8 @@ load color2id;
 colormap=uint8(zeros(240*320,3));
 gtmap=uint8(zeros(240*320,3));
 unarymap=colormap;
+error=0;
+draw=1;
 if isempty(ind_gb)
     choice=1:length(names);
 else
@@ -18,9 +20,9 @@ else
 end
 for currentseq=choice
     imnames=names{currentseq};
-    filename=[imnames,'_tem_pairwise_sptpunaryn.mat'];
-    %%%%%%%%%%%%%%%%%%%% PICK THE SEQUENCE %%%%%%%%%%%%%%%%%%%%%
-    if paraout2==exp(-5)||~exist(['./videoset/tem/',filename],'file');
+    filename=[imnames,'_tem_pairwise_sptpunary.mat'];
+    %%%%%%%%%%%%%%%%%%% PICK THE SEQUENCE %%%%%%%%%%%%%%%%%%%%%
+    if paraout2==exp(-5)||~exist(['./videoset/tem1/',filename],'file');
        count=0;
        unary=cell(9,1);
        adjin=cell(9,1);
@@ -40,7 +42,7 @@ for currentseq=choice
                      
            if frameiter~=4
                filename=[fullnames{infullnamesiter+frameiter}, '_TPadj.mat'];
-               load(['./videoset/tem/',filename]);
+               load(['./videoset/tem1/',filename]);
                beregionval=nonzeros(adjoutregion);
                beregionid=find(ismember(adjoutregion,beregionval)==1);
                [bex bey]=ind2sub(size(adjoutregion),beregionid);
@@ -52,19 +54,19 @@ for currentseq=choice
            adjmatin=cell2mat(adjin);
            adjmatbe=cell2mat(adjbe);
            unaryconf=cell2mat(unary);
-           filename=[imnames,'_tem_pairwise_sptpunaryn.mat'];
-           save(['./videoset/tem/',filename],'adjmatin','adjmatbe','unaryconf','count');
+           filename=[imnames,'_tem_pairwise_sptpunary.mat'];
+           save(['./videoset/tem1/',filename],'adjmatin','adjmatbe','unaryconf','count');
            clear unary adjin adjbe inregionval inregionid inx iny
     else
-        filename=[imnames,'_tem_pairwise_sptpunaryn.mat'];
-        load(['./videoset/tem/',filename]);
+        filename=[imnames,'_tem_pairwise_sptpunary.mat'];
+        load(['./videoset/tem1/',filename]);
     end
     filename=[imnames, '.mat'];
     New_Id=importdata([labeldir,'/',filename])+1;  
     
     newx=[adjmatin(:,1);adjmatbe(:,1)];
     newy=[adjmatin(:,2);adjmatbe(:,2)];
-    newval=[adjmatin(:,3);adjmatbe(:,3)*paraout1+paraout2];
+    newval=[adjmatin(:,3);exp(-adjmatbe(:,3)*paraout1)*paraout2];
     AdjancentMatrix=sparse(newx,newy,newval,sum(count),sum(count));
     [junk first]=max(unaryconf,[],2);
     nodePot=single(-log(unaryconf));
@@ -83,6 +85,11 @@ for currentseq=choice
 %     gch=GraphCut('close', gch);
 %     clear gch e;
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%     if 1
+%         displayresultimages(imnames,fullnames,reslabels,first,count);
+%         continue;
+%     end
+    
     reslabels=reslabels(sum(count(1:4))+1:sum(count(1:5)));
     firstlabel=first(sum(count(1:4))+1:sum(count(1:5)));
     
@@ -122,6 +129,11 @@ for currentseq=choice
     id=id+1;
 end
 [res ind_gb]=sort(error,'descend');
-ind_bad=ind_gb(1:2:20);
-ind_good=ind_gb(end-19:2:end);
+if length(ind_gb)<=20
+    ind_bad=ind_gb;
+    ind_good=ind_gb;
+else
+    ind_bad=ind_gb(1:2:20);
+    ind_good=ind_gb(end-19:2:end);
+end
 end
