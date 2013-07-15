@@ -8,7 +8,8 @@ imdir='../data/images';
 namecell=importdata('../data/framenames.txt');
 % para=get_para_flow(240,320);
 % verbose=0;
-for iter=1:size(namecell,1)-1
+matlabpool(4);
+parfor iter=1:size(namecell,1)-1
 %     imfile1=[imdir,'/',imagesdir(iter).name];
 %     imfile2=[imdir,'/',imagesdir(iter+1).name];
 %     if exist(['./videoset/flow/',imagesdir(iter).name],'file')
@@ -20,25 +21,26 @@ for iter=1:size(namecell,1)-1
 %     end
     im1name=[namecell{iter},'.png'];
     im2name=[namecell{iter+1},'.png'];
-    im1=double(imread([imdir,'/',im1name]));
-    im2=double(imread([imdir,'/',im2name]));
+    im1=imread([imdir,'/',im1name]);
+    im2=imread([imdir,'/',im2name]);
 %     [Flow,c1,c2]=LDOF(imfile1,imfile2,para,verbose);
 %   check_flow_correspondence(im1,im2,Flow);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
-%     im1name=regexprep(imagesdir(iter).name, '.png', '.ppm');
-%     im2name=regexprep(imagesdir(iter+1).name, '.png', '.ppm');
-%     imwrite(im1,im1name,'ppm');
-%     imwrite(im2,im2name,'ppm');
-%     im1 = double(imread(im1name));
-%     im2 = double(imread(im2name));
+    im1name=[namecell{iter},'.ppm'];
+    im2name=[namecell{iter},'.ppm'];
+    imwrite(im1,[imdir,'/',im1name],'ppm');
+    imwrite(im2,[imdir,'/',im2name],'ppm');
+    im1 = double(imread([imdir,'/',im1name]));
+    im2 = double(imread([imdir,'/',im2name]));
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %     flow_warp(im1,im2,Flow,1)
 %     flow_view=flowToColor(Flow);
 %     imwrite(flow_view,['./videoset/flow/',imagesdir(iter).name],'png');
-    Flow=mex_LDOF(im1,im2);
-    resultname=regexprep(im1name, '.png', '_Flow.mat');
-%     delete(im1name);
-%     delete(im2name);
-    save(['./videoset/newflow/',resultname],'Flow');
+%     Flow=mex_LDOF(im1,im2);
+%     resultname=regexprep(im1name, '.png', '_Flow.mat');
+    savefiles(namecell{iter},im1,im2);
+%     save(['./videoset/newflow/',resultname],'Flow');
     fprintf('flow from %s to %s finished\n',im1name,im2name);
+end
+matlabpool close;
 end
