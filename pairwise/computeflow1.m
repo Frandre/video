@@ -72,7 +72,8 @@ col=320;
         imagecolor1=importdata(['./videoset/tem/',filename]);
         valout1=sum((imagecolor(adjregion(:,2),1:3)-imagecolor1(adjregion(:,1)-double(nseg),1:3)).^2,2);
         valout1=valout1./max(valout1);
-    
+        valout1=adjregion(:,3).*valout1;
+        
         valout0=valout1;%*para1+para2;
         adjoutregion=sparse(findoutx,findouty,[valout0 valout0],...
              double(nseg+nseg1),double(nseg+nseg1));

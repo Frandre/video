@@ -29,18 +29,19 @@ col=320;
         selectid=setdiff(find(segimage==segiter),intersect(find(segimage==segiter),id));
         [selectregion(segiter) freq]=mode(single(segimage1(curr(selectid))));
         currregion=unique(segimage1(segimage==segiter));
+        weight=histc(segimage1(segimage==segiter),currregion)./sum(segimage(:)==segiter);
+
         if size(currregion,2)>size(currregion,1)
             currregion=currregion';
         end
-
+        
         findoutx=currregion+nseg;
-        if ~isempty(findoutx)
+        if ~isempty(findoutx)           
             findouty=ones(size(findoutx,1),1)*double(segiter);
-            adjregion{idnum}=[findoutx,findouty]; % [currregion,prevregion];
+            adjregion{idnum}=[double(findoutx),findouty,weight]; % [currregion,prevregion];
             idnum=idnum+1;
         end
-
-
+        
         if (freq<0.5*length(selectid))||isnan(selectregion(segiter))
             selectregion(segiter)=NaN;
         end
@@ -66,8 +67,9 @@ col=320;
         load(['./videoset/tem/',filename]);
         filename=[namecell{iter+1},'.labcolor.mat'];
         imagecolor1=importdata(['./videoset/tem/',filename]);
-        valout1=sum((imagecolor(adjregion(:,2),1:3)-imagecolor1(adjregion(:,1)-nseg,1:3)).^2,2);
+        valout1=sum((imagecolor(adjregion(:,2),1:3)-imagecolor1(adjregion(:,1)-double(nseg),1:3)).^2,2);
         valout1=valout1./max(valout1);
+        valout1=adjregion(:,3).*valout1;
         
         valout0=valout1;%*para1+para2;
         adjoutregion=sparse(findoutx,findouty,[valout0 valout0],...

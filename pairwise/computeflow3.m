@@ -19,7 +19,7 @@ col=320;
     filename=regexprep(imname, '.png', '.segimage.mat');
     load(['./videoset/tem/',filename]);
     
-    nseg=max(max(segimage));
+    nseg=double(max(max(segimage)));
     filename=[namecell{iter+1},'.segimage.mat'];
     segimage1=importdata(['./videoset/tem/',filename]);        
     nseg1=max(max(segimage1));

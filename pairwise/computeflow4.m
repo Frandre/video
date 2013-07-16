@@ -17,7 +17,7 @@ col=320;
     filename=regexprep(imname, '.png', '.segimage.mat');
     load(['./videoset/tem/',filename]);
 
-    nseg=max(max(segimage));
+    nseg=double(max(max(segimage)));
     filename=[namecell{iter+1},'.segimage.mat'];
     segimage1=importdata(['./videoset/tem/',filename]);
     nseg1=max(max(segimage1));
@@ -28,7 +28,8 @@ col=320;
         %%%%%%%%%%%%%%%%%%%%%% Between Frames %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         selectid=setdiff(find(segimage==segiter),intersect(find(segimage==segiter),id));
         [selectregion(segiter) freq]=mode(single(segimage1(curr(selectid))));
-        currregion=unique(segimage1(segimage==segiter));
+        currregion=unique(segimage1(segimage(:)==segiter)); 
+        weight=histc(segimage1(segimage==segiter),currregion)./sum(segimage(:)==segiter);
         if size(currregion,2)>size(currregion,1)
             currregion=currregion';
         end
@@ -36,11 +37,10 @@ col=320;
         findoutx=currregion+nseg;
         if ~isempty(findoutx)
             findouty=ones(size(findoutx,1),1)*double(segiter);
-            adjregion{idnum}=[findoutx,findouty]; % [currregion,prevregion];
+            adjregion{idnum}=[double(findoutx),findouty,weight]; % [currregion,prevregion];
             idnum=idnum+1;
         end
-
-
+        
         if (freq<0.5*length(selectid))||isnan(selectregion(segiter))
             selectregion(segiter)=NaN;
         end
@@ -64,7 +64,7 @@ col=320;
 %          nanid=find(isinf(valout)==1);
 %         tmp=flown1(uint32(adjregion(:,1))-nseg,:);
 %         valout(nanid)=tmp(nanid);
-        valout=sum(valout,2)/2;
+        valout=adjregion(:,3).*sum(valout,2)/2;
 %        meanval=1/(sum(valout)/length(valout));
 %        valout=exp(-meanval*valout);
 
