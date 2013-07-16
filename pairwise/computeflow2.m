@@ -1,4 +1,4 @@
-function computeflow4(namecell,iter)
+function computeflow2(namecell,iter)
 
 row=240;
 col=320;
@@ -51,30 +51,31 @@ col=320;
     findouty=double([adjregion(:,2);adjregion(:,1)]);
 
 
-        filename=[namecell{iter+1},'.flowdis.mat'];
-        flown1=importdata(['./videoset/tem/',filename]);
-        filename=[namecell{iter},'.flowdis.mat'];
-        load(['./videoset/tem/',filename]);
-        flown=bsxfun(@times,flown,1./sum(flown,2));
-        flown1=bsxfun(@times,flown1,1./sum(flown1,2));
+%         filename=[namecell{iter+1},'.flowdis.mat'];
+%         flown1=importdata(['./videoset/tem/',filename]);
+%         filename=[namecell{iter},'.flowdis.mat'];
+%         load(['./videoset/tem/',filename]);
+%         flown=bsxfun(@times,flown,1./sum(flown,2));
+%         flown1=bsxfun(@times,flown1,1./sum(flown1,2));
+%         
+%         valout=((flown(adjregion(:,2),:)-flown1(adjregion(:,1)-nseg,:)).^2)./(flown(adjregion(:,2),:)+flown1(adjregion(:,1)-nseg,:));
+%         valout(isnan(valout))=0;
+%         valout=sum(valout,2)/2;
         
-        valout=((flown(adjregion(:,2),:)-flown1(adjregion(:,1)-nseg,:)).^2)./(flown(adjregion(:,2),:)+flown1(adjregion(:,1)-nseg,:));
-        valout(isnan(valout))=0;
-%        valout(isinf(valout))=max(abs(valout(~isinf(valout))));
-%          nanid=find(isinf(valout)==1);
-%         tmp=flown1(uint32(adjregion(:,1))-nseg,:);
-%         valout(nanid)=tmp(nanid);
-        valout=sum(valout,2)/2;
-%        meanval=1/(sum(valout)/length(valout));
-%        valout=exp(-meanval*valout);
-
-        valout0=valout;%*para1+para2;
+        filename=[namecell{iter},'.labcolor.mat'];
+        load(['./videoset/tem/',filename]);
+        filename=[namecell{iter+1},'.labcolor.mat'];
+        imagecolor1=importdata(['./videoset/tem/',filename]);
+        valout1=sum((imagecolor(adjregion(:,2),1:3)-imagecolor1(adjregion(:,1)-nseg,1:3)).^2,2);
+        valout1=valout1./max(valout1);
+        
+        valout0=valout1;%*para1+para2;
         adjoutregion=sparse(findoutx,findouty,[valout0 valout0],...
              double(nseg+nseg1),double(nseg+nseg1));
 
-         filename=[namecell{iter},'_TPadj.mat'];
+         filename=[namecell{iter},'_TPadjn.mat'];
          save(['./videoset/tem/',filename],'adjoutregion');
 
     adjregion=[];
-    fprintf('Finish image %s temporal adjacent matrix TPadj (without color)...\n',imname);
+    fprintf('Finish image %s temporal adjacent matrix TPadjn (only color)...\n',imname);
 end
