@@ -1,4 +1,4 @@
-function [ind_bad ind_good error]=tppairwise(minpara1,minpara2,paraout1,paraout2,draw,ind_gb,gb)
+function [ind_bad ind_good error]=tppairwise(minpara1,minpara2,paraout1,paraout2,draw,ind_gb,gb,adj)
 
 outdir='./videoset/';
 mapresult=zeros(240*320,1);
@@ -6,68 +6,44 @@ labeldir='../myCamVid/data/labels';
 names=importdata('../myCamVid/framenames.txt');
 load semanticmapping;
 id=1;
-fullnames=importdata('../data/framenames.txt');
 load color2id;
 colormap=uint8(zeros(240*320,3));
 gtmap=uint8(zeros(240*320,3));
 unarymap=colormap;
 error=0;
-draw=1;
+draw=0;
 if isempty(ind_gb)
     choice=1:length(names);
 else
     choice=ind_gb;
 end
+if adj==0
+    tem='tem/';
+else
+    tem='tem1/';
+end
 for currentseq=choice
     imnames=names{currentseq};
-    filename=[imnames,'_tem_pairwise_sptpunary.mat'];
-    %%%%%%%%%%%%%%%%%%% PICK THE SEQUENCE %%%%%%%%%%%%%%%%%%%%%
-    if paraout2==exp(-5)||~exist(['./videoset/tem1/',filename],'file');
-       count=0;
-       unary=cell(9,1);
-       adjin=cell(9,1);
-       adjbe=cell(8,1);
-       for frameiter=-4:4
-       %%%%%%%%%%%%%%%%% CURRENT FRAME %%%%%%%%%%%%%%%
-           infullnamesiter=find(strcmp(fullnames,imnames)==1);
-           filename=[fullnames{infullnamesiter+frameiter}, '.region.geometric.mat'];
-           load(['./videoset/geooutput/',filename]);
-           filename=[fullnames{infullnamesiter+frameiter}, '_SPadj.mat'];
-           load(['./videoset/tem/',filename]);
-           inregionval=nonzeros(adjinregion);
-           inregionid=find(ismember(adjinregion,inregionval)==1);
-           [inx iny]=ind2sub(size(adjinregion),inregionid);
-           adjin{frameiter+5}=[[inx iny]+sum(count),inregionval*minpara1+minpara2]; 
-           unary{frameiter+5}=geo_region_conf;
-                     
-           if frameiter~=4
-               filename=[fullnames{infullnamesiter+frameiter}, '_TPadj.mat'];
-               load(['./videoset/tem1/',filename]);
-               beregionval=nonzeros(adjoutregion);
-               beregionid=find(ismember(adjoutregion,beregionval)==1);
-               [bex bey]=ind2sub(size(adjoutregion),beregionid);
-               adjbe{frameiter+5}=[[bex bey]+sum(count),beregionval];
-           end
-           
-           count(frameiter+5)=double(size(adjinregion,1));
-        end
-           adjmatin=cell2mat(adjin);
-           adjmatbe=cell2mat(adjbe);
-           unaryconf=cell2mat(unary);
-           filename=[imnames,'_tem_pairwise_sptpunary.mat'];
-           save(['./videoset/tem1/',filename],'adjmatin','adjmatbe','unaryconf','count');
-           clear unary adjin adjbe inregionval inregionid inx iny
-    else
-        filename=[imnames,'_tem_pairwise_sptpunary.mat'];
-        load(['./videoset/tem1/',filename]);
-    end
+    filename=[imnames,'_tem_pairwise_sptpunaryn.mat'];
+    load(['./videoset/',tem,filename]);
+
     filename=[imnames, '.mat'];
-    New_Id=importdata([labeldir,'/',filename])+1;  
-    
-    newx=[adjmatin(:,1);adjmatbe(:,1)];
-    newy=[adjmatin(:,2);adjmatbe(:,2)];
-    newval=[adjmatin(:,3);exp(-adjmatbe(:,3)*paraout1)*paraout2];
-    AdjancentMatrix=sparse(newx,newy,newval,sum(count),sum(count));
+    New_Id=importdata([labeldir,'/',filename])+1;
+
+%     newx=[adjmatin(:,1);adjmatbe(:,1)];
+%     newy=[adjmatin(:,2);adjmatbe(:,2)];
+%     newval=[adjmatin(:,3)*minpara1+minpara2;exp(-adjmatbe(:,3)*paraout1-(1-paraout1)*adjmatbe(:,4))*paraout2];
+    tmpadj=adjbesp*paraout1+adjbecsp*(1-paraout1);
+    adjval=nonzeros(tmpadj);
+    adjid=find(ismember(tmpadj,adjval)==1);
+    [adjx adjy]=ind2sub(size(tmpadj),adjid);
+    AdjancentMatrix=sparse(adjx,adjy,exp(-adjval),size(tmpadj,1),size(tmpadj,2));
+               
+    AdjancentMatrix=AdjancentMatrix*paraout2+adjinsp*minpara1+minpara2;
+    if ~issparse(AdjancentMatrix)
+        AdjancentMatrix=sparse(AdjancentMatrix);
+    end
+%     AdjancentMatrix=sparse(newx,newy,newval,sum(count),sum(count));
     [junk first]=max(unaryconf,[],2);
     nodePot=single(-log(unaryconf));
     SmoothnessCost=single(ones(5)-eye(5));
@@ -89,10 +65,10 @@ for currentseq=choice
 %         displayresultimages(imnames,fullnames,reslabels,first,count);
 %         continue;
 %     end
-    
+
     reslabels=reslabels(sum(count(1:4))+1:sum(count(1:5)));
     firstlabel=first(sum(count(1:4))+1:sum(count(1:5)));
-    
+
     filename=[imnames, '.segimage.mat'];
     load(['./videoset/tem/',filename]);
     reallabel=region2pixel(reslabels+1,segimage);
@@ -100,7 +76,7 @@ for currentseq=choice
     for mmiter=1:11
         mapresult(New_Id==mmiter)=semanticmapping(mmiter,3);
     end
-    
+
     if draw==1
         for cciter=1:5
             unarymap(firstlabel(:)==cciter,:)=repmat(mapping(cciter,:),sum(firstlabel(:)==cciter),1);
@@ -122,9 +98,9 @@ for currentseq=choice
         end
         imwrite([reshape(colormap,240,320,3),reshape(unarymap,240,320,3),reshape(gtmap,240,320,3)],[outdir,'comparetp/',filename],'jpg');
         gtmap=gtmap*0;
-    end        
+    end
     error(id)=sum(mapresult(mapresult>0)~=reallabel(mapresult>0))/sum(mapresult(:)>0);
-    fprintf('----------Image %s finish----------- %u number\n',imnames,currentseq);  
+    fprintf('----------Image %s finish----------- %u number\n',imnames,currentseq);
     mapresult=mapresult*0;
     id=id+1;
 end
