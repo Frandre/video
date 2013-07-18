@@ -1,0 +1,93 @@
+This file explains how to repeat my experiment from very beginning:
+
+All code is under /Desktop/tem/videoparoject/ (The branches in GitHub is unnecessary)
+
+Additional packages are under the GitHub project folder (under /Desktop/). BTW, the extern folder is empty here. You need to download GCMex.2.3.0 (UCLA package) , Higherorder (Shai Bargeon matlab wrapper) and slic (VLfeat) and mex under /Desktop/project/extern/.
+
+videosegmant.m can be used as a script to generate all geometric related information
+///////////////////////////////How to Get Data//////////////////////////////
+
+1. Data can be downloaded from Cambridge direactly. There are 4 videosets in total and extra program should also be installed to extract frames (I use the png format). Original data is saved under /Desktop/tem/data/ (three folders, trainimage valimage and testimage). 
+All data are renamed and resized by the code:
+                                           renameimages.m
+                                           resizeimages.m
+   Then framenames.txt that consists of training and validation frames (all single frames extracted from CamVid) can be generated.
+
+2. For images that are provided with groundtruth labels. We have another folder under /Desktop/tem/myCamVid/data/ (there are two folders under this directory: images and labels)
+   camvidTestList.txt canvidTrainList.txt and camvidValList.txt are generated
+
+(All name files are the iamge names without the format part.)
+
+/////////////////////////////How to Get Unary Term/////////////////////////
+
+1. For geometric unary term :
+   Geometric unary term is obtained by Hoeim's method. Source code can be downloaded. We make some changes because we have different label space. The source code is uploaded in Dropbox~
+   We put the souce code under /Desktop/
+   Then we make use of 
+                                            alltrainimage.m
+   to generate the images to the strcuture that Hoeim's code can recognise.
+   Then the script 
+                                       trainTestSurfaceContextScript.m
+   is used to train a classifier that can provide us the geometric confidence results
+   Then apply 
+                                            geometricpotential.m
+   to generate superpixels and obtain new superpixel results.   
+
+2. For semantic unary term :
+   Semantic unary term is obtained by Darwin system. You can download and install Darwin system and change the  pixSegPipeline.sh file. 
+   After last step, use 
+                                         regionconfsemantic.m 
+ to convert the pixel level semantic potential results to region level semantic confidence results.
+
+////////////////////////////How to Get the JointLabelling ////////////////
+
+Use jointlabel.m directly to train a multiclass logistic classifier
+
+///////////////////////////How to Get Pairwise Term//////////////////////
+ 
+1. Compute the features that could be useful
+   colorfeatures can be extractly by getcolor.m
+   optical flow distribution can obtained be flowd.m
+ 
+2. Build the adjacent graph 
+   a.
+     For adjacent matrix inside one frame. You can apply
+                                           spatialsmooth.m
+     Color are extracted as information
+
+   b.
+     Based on different method and information. There are 4 kinds of flow feature and adjacent matrix (if you want to change the frames that we concern at a time, changes are needed in 4 m files)
+                                           computeflow1.m
+                                           computeflow2.m
+                                           computeflow3.m
+                                           computeflow4.m
+     Those saved under tem1 are based on optical flow results, while those saved under tem are based on overlapping methods   
+     Color and flow distribution are features.
+
+3. Training pairwiseterm (piecewise training)
+   a.
+     For spatial part, apply 
+                                           trainsppairwise.m
+     We train spatialterm first and pass it to temporal pairwise term.
+   b.
+     For temporal part, apply
+                                           traintppairwise.m
+     Get the parameter trained by spatial term, we can further add tamporal term (If you would like to check the result of only unary and temporal pairwise term, change parameters in tppairwise.m)
+
+//////////////////////////How to get Higher Order/////////////////////
+
+(Before the following steps, you can use showresults.m to generate new graph, with fixed unary confidence map and spatial and temporal map (I mean the with optimal parameter we trained...))
+
+1. Compute the higher order clique
+   Apply 
+                                           gethigherorder.m
+   
+   and you can obtain the 9 frame based higher order files (If you would like to have a longer range, change the parameters)
+
+2. Train higher order term
+   Apply 
+                                           traintphigherorder.m
+   Two stages inside. One is ignore the temporal pairwise term (turn it off in the whole graph). After that, turn it on, and train a ratio that balance the temporal pairwise term and the higher order term.
+
+////////////////////////////////////////////////////////////// END 
+
