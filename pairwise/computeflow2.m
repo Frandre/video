@@ -77,7 +77,9 @@ col=320;
 
          filename=[namecell{iter},'_TPadjn.mat'];
          save(['./videoset/tem/',filename],'adjoutregion');
-
-    adjregion=[];
-    fprintf('Finish image %s temporal adjacent matrix TPadjn (only color)...\n',imname);
+         filename=[imname,'.next.mat'];
+         save(['./videoset/tem/',filename],'selectregion');
+    
+         adjregion=[];
+         fprintf('Finish image %s temporal adjacent matrix TPadjn (only color)...\n',imname);
 end

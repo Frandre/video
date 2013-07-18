@@ -20,7 +20,7 @@ for iter=1:length(choice1)
     fullchoice=[fullchoice;choice22];
 end
 fullerror=zeros(90,101);
-gethigherorder;
+% gethigherorder;
 matlabpool(4);
 %  for para1=1:4
 %         parahigher1=exp(para1);
