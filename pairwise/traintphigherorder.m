@@ -19,8 +19,8 @@ for iter=1:length(choice1)
     choice22=[choice1(iter)*ones(length(finalchoice),1) finalchoice];
     fullchoice=[fullchoice;choice22];
 end
-fullerror=zeros(90,101);
-gethigherorder;
+fullerror=zeros(80,101);
+% gethigherorder;
 matlabpool(4);
 %  for para1=1:4
 %         parahigher1=exp(para1);
@@ -33,14 +33,14 @@ matlabpool(4);
 %                     for para5=-6:-2
 %                         parahigher5=exp(para5);
 %                         id=id+1;
-parfor iter=1:90
+parfor iter=1:80
 %     minpara=importdata('./videoset/result/geometricsppairwise.mat');
     parahigher1=exp(fullchoice(iter,1));
     parahigher2=exp(fullchoice(iter,2));
     parahigher5=exp(fullchoice(iter,3));
                         fprintf('/////////////////////PARAMITERS ARE %u, %u ,%u ///////////////////////\n',parahigher1,parahigher2,parahigher5);
 %                         error=higherorder(minpara(1),minpara(2),10^-4,10^-4,parahigher1,parahigher2,parahigher3,parahigher4,parahigher5,0);
-                        error=higherorder(0,parahigher1,parahigher2,parahigher5,0);
+                        error=higherorder(0,1,parahigher1,parahigher2,parahigher5,0);
 %                         if mean(error)<=minerror
 % %                             minparahigher=[parahigher1 parahigher2 parahigher3 parahigher4 parahigher5 ];
 %                             minparahigher=[parahigher1 parahigher2 parahigher5 ];
@@ -65,28 +65,32 @@ save('fullerrorhigherorderval.mat','fullerror');
 % final=higherorder(minpara(1),minpara(2),10^-4,10^-4,minparahigher(1),minparahigher(2),minparahigher(3),minparahigher(4),minparahigher(5),1);
 % final=higherorder(minpara(1),minpara(2),10^-4,10^-4,minparahigher(1),minparahigher(2),minparahigher(3),1);
 diary off;
-load('./videoset/result/geometrictphigher.mat');
+load('./videoset/result/geometrictphigherval.mat');
 diary('tphigherorderandparawise.txt')
 diary on;
 minerror1=1;
 id=0;
-for ra=-3:9
+fullerror=zeros(25,101);
+for ra=-3:0.5:9
     ratio=exp(ra);
     fprintf('/////////////////////RATIO is %u ///////////////////////\n',ratio);
     id=id+1;
-    minparabe=minparabe*ratio;
+%     minparahigher=minparahigher*ratio;
 %     error1=higherorder(minpara(1),minpara(2),minparabe(1),minparabe(2),minparahigher(1),minparahigher(2),minparahigher(3),minparahigher(4),minparahigher(5),0);
-       error1=higherorder(1,minparahigher(1),minparahigher(2),minparahigher(3),0);
+       error1=higherorder(1,ratio,minparahigher(1),minparahigher(2),minparahigher(3),0);
     if mean(error1)<minerror1
         minratio=ratio;
         minerror=mean(error1);
     end
+    fullerror(id,:)=error1;
     fprintf('///////////////CURRENT PARAMITER ERROR is %e/////////////\n',mean(error1));
 end
 fprintf('!!!!!!!!!!!!!!!!!!!Final ratio between higherorder and pairwise term is %e !!!!!!!!!!!!!!!!!\n',ratio);
 save('./videoset/result/geometrictphigherandpairwiseval.mat','minratio');
 % error1=cell2mat(error1);
 save('./videoset/result/errorfortphigherorderandpairwiseval.mat','minerror');
+save('fullval.mat','fullerror');
 % final=higherorder(minpara(1),minpara(2),minparabe(1),minparabe(2),minratio*minparahigher(1),minratio*minparahigher(2),minratio*minparahigher(3),minratio*minparahigher(4),minratio*minparahigher(5),1);
-final=higherorder(minpara(1),minpara(2),minratio*minparabe(1),minratio*minparabe(2),minparahigher(1),minparahigher(2),minparahigher(3),1);
+% final=higherorder(minpara(1),minpara(2),minratio*minparabe(1),minratio*minparabe(2),minparahigher(1),minparahigher(2),minparahigher(3),1);
+diary off;
 end

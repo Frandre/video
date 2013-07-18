@@ -1,6 +1,6 @@
 % function error=higherorder(parasp1,parasp2,paratp1,paratp2,parahigher1,parahigher2,parahigher3,parahigher4,parahigher5,draw)
 % function error=higherorder(parasp1,parasp2,paratp1,paratp2,parahigher1,parahigher2,parahigher5,draw)
-function error=higherorder(para,parahigher1,parahigher2,parahigher5,draw)
+function error=higherorder(para,ratio,parahigher1,parahigher2,parahigher5,draw)
 
 outdir='./videoset/';
 temdir='./videoset/tem/';
@@ -88,7 +88,7 @@ for currentseq=1:length(names)
 %     newx=[adjinregion(:,1);adjoutregion(:,1)];
 %     newy=[adjinregion(:,2);adjoutregion(:,2)];
 %     newval=[adjinregion(:,3);adjoutregion(:,3)*paratp1+paratp2];
-    fulladjmatrix=sparse(AdjancentMatrixtp*para+AdjancentMatrixsp);
+    fulladjmatrix=sparse((AdjancentMatrixtp*para+AdjancentMatrixsp)*ratio);
     [junk_val first]=max(unaryconf,[],2);
     Dc=single((-log(unaryconf))');
     [L E]=robustpn_mex(fulladjmatrix,Dc,hop,first);
